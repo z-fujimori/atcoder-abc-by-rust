@@ -1,47 +1,49 @@
 use proconio::input;
-use std::{collections::{BinaryHeap, VecDeque, HashSet}, fmt::format, result, string, thread::AccessError, usize};
+use std::{
+    collections::{BinaryHeap, HashMap, HashSet, VecDeque}, fmt::format, future, i64, print, println, result, string, thread::AccessError, vec,
+};
 
 fn main() {
     input! {
-        n: usize,
-        boon_shape: [(usize, usize); n],
-        m: usize,
-        string_list: [String; m],
-        // vec_a: [usize; n],
+        q: usize,
+        s: String,
+        t: String,
+        query_vec: [(usize, usize); q]
     }
 
-    let mut sekitui_word_kouho: Vec<HashSet<char>> = vec![HashSet::new(); n]; 
-    for i in 0..n {
-        let (len, word_num) = boon_shape[i];
-        for j in 0..m {
-            let word = &string_list[j];
-            if word.len() == len {
-                sekitui_word_kouho[i].insert(word.chars().nth(word_num - 1).unwrap());
+    let mut head = 0;
+    let s_len = s.len();
+    let t_len = t.len();
+    let mut yes_indent_vec = vec![];
+
+    if s_len >= t_len {
+        while head <= s_len - t_len {
+            let bytes = s.as_bytes();
+            let s2: &[u8] = &bytes[head..head + t_len];
+    
+            if s2 == t.as_bytes() {
+                yes_indent_vec.push(head);
             }
+    
+            head += 1;
         }
     }
 
-    for i in 0..m {
-        let word = &string_list[i];
-        if word.len() != n {
+    // println!("{:?}", yes_indent_vec);
+
+    for (l, r) in query_vec {
+        if r - l + 1 < t_len {
             println!("No");
             continue;
         }
-        if check_string(n, &sekitui_word_kouho, word) {
+        let pos = yes_indent_vec.partition_point(|&x| x < l - 1);
+
+        let exists = pos < yes_indent_vec.len() && yes_indent_vec[pos] <= r - t_len;
+
+        if exists {
             println!("Yes");
         } else {
             println!("No");
         }
     }
-}
-
-fn check_string(n: usize, sekitui_word_kouho: &Vec<HashSet<char>>, word: &String) -> bool {
-    for i in 0..n {
-        let kouho_list = &sekitui_word_kouho[i];
-        let target_char = word.chars().nth(i).unwrap();
-        if !kouho_list.contains(&target_char) {
-            return false;
-        }
-    }
-    return true;
 }
